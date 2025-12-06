@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <property name="LOG_DIR" value="logs" />
+    <property name="LOG_NAME" value="application" />
+
+    <!-- Appender untuk Console -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Appender untuk File dengan Rotasi Harian -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- File log aktif untuk hari ini -->
+        <file>${LOG_DIR}/${LOG_NAME}.log</file>
+
+        <encoder>
+            <pattern>%d{ISO8601} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- File archive untuk hari sebelumnya (mengandung tanggal) -->
+            <fileNamePattern>${LOG_DIR}/archived/${LOG_NAME}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Simpan archive selama 30 hari -->
+            <maxHistory>30</maxHistory>
+            <!-- Trigger rotasi setiap hari pukul 00:00 -->
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <!-- Logger untuk aplikasi Anda -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+
+    <!-- Level khusus untuk paket Anda -->
+    <logger name="com.abahstudio" level="DEBUG" />
+</configuration>
