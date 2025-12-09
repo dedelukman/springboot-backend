@@ -1,5 +1,6 @@
 package com.abahstudio.app.core.exception;
 
+import jakarta.persistence.OptimisticLockException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +57,20 @@ public class GlobalExceptionHandler {
                                                         HttpServletRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
         return buildErrorResponse(ErrorCode.USER_NOT_FOUND, "Resource not found", request);
+    }
+
+    // ----------- Database / Concurrency Exceptions -----------
+    @ExceptionHandler(OptimisticLockException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockException ex,
+                                                              HttpServletRequest request) {
+
+        log.warn("Optimistic lock conflict: {}", ex.getMessage());
+
+        return buildErrorResponse(
+                ErrorCode.VERSION_CONFLICT,
+                "The data has been updated by another user. Please refresh your page.",
+                request
+        );
     }
 
     // ----------- Security Critical: Generic Exception -----------

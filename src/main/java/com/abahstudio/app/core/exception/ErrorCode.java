@@ -16,9 +16,12 @@ public enum ErrorCode {
 
     // --- VALIDATION ---
     BAD_REQUEST(HttpStatus.BAD_REQUEST, "BAD_REQUEST", "Request validation error"),
+    VERSION_CONFLICT(HttpStatus.CONFLICT,"VERSION_CONFlICT" ,"Version conflict"),
 
     // --- SERVER ---
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", "Unexpected server error");
+
+
 
     private final HttpStatus status;
     private final String code;

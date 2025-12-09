@@ -1,6 +1,7 @@
 package com.abahstudio.app.core.exception;
 
 
+import jakarta.persistence.OptimisticLockException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -69,7 +70,7 @@ class GlobalExceptionHandlerTest {
     void handleGeneralException_shouldNotExposeInternalDetails() {
         // Given
         HttpServletRequest request = mock(HttpServletRequest.class);
-        when(request.getRequestURI()).thenReturn("/api/users");
+        when(request.getRequestURI()).thenReturn("/api/v1/users");
 
         Exception ex = new RuntimeException("Database connection failed: password=secret123");
 
@@ -83,5 +84,30 @@ class GlobalExceptionHandlerTest {
                 .isEqualTo("An unexpected error occurred. Please contact support."); // Generic message
         assertThat(response.getBody().getDetail())
                 .doesNotContain("Database", "password", "secret123"); // No sensitive info
+    }
+
+    @Test
+    void handleOptimisticLock_shouldReturnVersionConflictError() {
+        // Arrange
+        GlobalExceptionHandler handler = new GlobalExceptionHandler();
+
+        OptimisticLockException ex = new OptimisticLockException("Row was updated");
+
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getRequestURI()).thenReturn("/api/test");
+
+        // Act
+        ResponseEntity<ErrorResponse> response =
+                handler.handleOptimisticLock(ex, request);
+
+        // Assert
+        assertThat(response.getStatusCode())
+                .isEqualTo(ErrorCode.VERSION_CONFLICT.getStatus());
+
+        ErrorResponse body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body.getDetail())
+                .isEqualTo("The data has been updated by another user. Please refresh your page.");
+        assertThat(body.getPath()).isEqualTo("/api/test");
     }
 }
