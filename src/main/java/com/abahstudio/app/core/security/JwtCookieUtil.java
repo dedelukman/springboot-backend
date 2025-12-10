@@ -25,6 +25,12 @@ public class JwtCookieUtil {
     private String sameSite;
 
     @Value("${jwt.access.expiration}")
+    private long accessExpMs;
+
+    @Value("${jwt.refresh.expiration}")
+    private long refreshExpMs;
+
+    @Value("${jwt.access.expiration}")
     private int accessExp;
 
     @Value("${jwt.refresh.expiration}")
@@ -35,12 +41,14 @@ public class JwtCookieUtil {
     // ==========================
 
     public void setAccessToken(HttpServletResponse response, String token) {
-        Cookie cookie = createCookie(ACCESS_COOKIE, token, accessExp); // 15 menit
+        int maxAgeSec = (int) (accessExpMs / 1000);
+        Cookie cookie = createCookie(ACCESS_COOKIE, token, maxAgeSec); // 15 menit
         response.addHeader("Set-Cookie", buildCookieHeader(cookie));
     }
 
     public void setRefreshToken(HttpServletResponse response, String token) {
-        Cookie cookie = createCookie(REFRESH_COOKIE, token, refreshExp); // 7 hari
+        int maxAgeSec = (int) (refreshExpMs / 1000);
+        Cookie cookie = createCookie(REFRESH_COOKIE, token, maxAgeSec); // 7 hari
         response.addHeader("Set-Cookie", buildCookieHeader(cookie));
     }
 
