@@ -48,8 +48,8 @@ public class ApiSecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/h2-console/**").permitAll()   // h2-console setting
-                        .requestMatchers("/api/v1/login").permitAll()
-                        .requestMatchers("/api/v1/register").permitAll()
+                        .requestMatchers("/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/auth/register").permitAll()
                         .anyRequest().authenticated()
                 );
 
