@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
-
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
@@ -37,26 +38,17 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             HttpServletResponse response
     ) {
-        try{
+        try {
+            // First try to find user by email
+            User user = userService.getUserByUsername(request.getEmail())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // Then authenticate
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            // Get the principal based on your implementation
-            Object principal = authentication.getPrincipal();
-            User user;
-
-            if (principal instanceof User) {
-                user = (User) principal;
-            } else {
-                // If principal is Spring Security's User, you might need to load your custom User
-                String email = ((org.springframework.security.core.userdetails.User) principal).getUsername();
-                user = userService.getUserByUsername(email)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
-            }
-
 
             String accessToken = jwtUtil.generateAccessToken(user.getEmail());
             String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
@@ -66,12 +58,12 @@ public class AuthController {
 
             return ResponseEntity.ok(Map.of(
                     "message", "Login success",
-                    "username", user.getUsername()
+                    "username", user.getEmail()  // Changed from user.getUsername()
             ));
         } catch (Exception e) {
+            log.error("Login error: ", e);
             return ResponseEntity.badRequest().body("Invalid email or password");
         }
-
     }
 
 
@@ -106,46 +98,41 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
-        try {
-            if (userService.existsByUsername(request.getEmail())) {
-                return ResponseEntity.badRequest().body("Email is already taken");
-            }
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request,
+                                      HttpServletResponse response) {
 
-            User user = new User();
-            user.setFullName(request.getName());
-            user.setEmail(request.getEmail());
-            user.setPassword(request.getPassword());
-            user.setRole(Role.USER);
-
-            User savedUser = userService.createUser(user);
-            if(savedUser == null){
-                return ResponseEntity.badRequest().body("User registration failed");
-            }
-
-            // Create authentication for new user
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-            );
-
-            String accessToken = jwtUtil.generateAccessToken(user.getEmail());
-            String refreshToken = jwtUtil.generateRefreshToken(user.getEmail());
-
-            // Generate JWT token for new user
-            cookieUtil.setAccessToken(response, accessToken);
-            cookieUtil.setRefreshToken(response, refreshToken);
-
-            return ResponseEntity.ok(Map.of(
-                    "message", "Login success",
-                    "username", user.getUsername()
-            ));
-        } catch (BadCredentialsException e) {
-            return ResponseEntity.badRequest().body("Invalid email or password");
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Registration failed");
+        // Cek email
+        if (userService.existsByUsername(request.getEmail())) {
+            return ResponseEntity.badRequest().body("Email is already taken");
         }
 
+        // Buat user baru
+        User user = new User();
+        user.setFullName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword()); // service harus encode!
+        user.setRole(Role.USER);
+
+        // Simpan user
+        User savedUser = userService.createUser(user);
+
+        // Generate JWT berdasarkan savedUser
+        String accessToken = jwtUtil.generateAccessToken(savedUser.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getEmail());
+
+        // Set cookie
+        cookieUtil.setAccessToken(response, accessToken);
+        cookieUtil.setRefreshToken(response, refreshToken);
+
+        // React expects this:
+        return ResponseEntity.ok(Map.of(
+                "id", savedUser.getId(),
+                "name", savedUser.getFullName(),
+                "email", savedUser.getEmail(),
+                "role", savedUser.getRole().name()
+        ));
     }
+
 
     // =================================
     //              LOGOUT

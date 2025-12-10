@@ -36,5 +36,12 @@ public class User extends BaseEntity {
     private boolean enabled = true;
     private boolean locked = false;
 
+    @PrePersist
+    public void prePersist() {
+        if (this.username == null) {
+            this.username = this.email;
+        }
+    }
+
 }
 
