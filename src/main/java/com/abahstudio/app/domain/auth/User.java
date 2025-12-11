@@ -11,6 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString
 public class User extends BaseEntity {
 
     @Id
@@ -42,6 +43,8 @@ public class User extends BaseEntity {
             this.username = this.email;
         }
     }
+
+
 
 }
 

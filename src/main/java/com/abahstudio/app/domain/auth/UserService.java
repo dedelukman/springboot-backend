@@ -1,18 +1,24 @@
 package com.abahstudio.app.domain.auth;
 
+import com.abahstudio.app.core.exception.ApiException;
+import com.abahstudio.app.core.exception.ErrorCode;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
     public List<User> getAllUsers() {
         return userRepository.findAll();
@@ -31,15 +37,30 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User updateUser(Long id, User userDetails) {
+    public User updateUser(Long id, User userDetails, HttpServletResponse response) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
+        boolean usernameChanged = !user.getUsername().equals(userDetails.getUsername());
+        boolean emailChanged = !user.getEmail().equals(userDetails.getEmail());
+
+        if (usernameChanged && existsByUsername(userDetails.getUsername())) {
+            throw new ApiException(ErrorCode.USERNAME_ALREADY_TAKEN);
+        }
+        if (emailChanged && existsByUsername(userDetails.getEmail())) {
+            throw new ApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
+        }
+
+        user.setUsername(userDetails.getUsername());
         user.setFullName(userDetails.getFullName());
         user.setEmail(userDetails.getEmail());
 
         if (userDetails.getPassword() != null && !userDetails.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        }
+
+        if (usernameChanged) {
+            authService.reAuthenticate(user, response);
         }
 
         return userRepository.save(user);
@@ -54,5 +75,6 @@ public class UserService {
     public boolean existsByUsername(String usernameOrEmail) {
         return userRepository.existsByUsernameOrEmail(usernameOrEmail, usernameOrEmail);
     }
+
 
 }
