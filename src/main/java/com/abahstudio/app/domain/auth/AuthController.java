@@ -9,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -129,7 +128,8 @@ public class AuthController {
                 "id", savedUser.getId(),
                 "name", savedUser.getFullName(),
                 "email", savedUser.getEmail(),
-                "role", savedUser.getRole().name()
+                "role", savedUser.getRole().name(),
+                "username", savedUser.getUsername()
         ));
     }
 
