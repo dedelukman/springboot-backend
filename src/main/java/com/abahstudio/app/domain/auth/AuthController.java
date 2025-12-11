@@ -55,9 +55,13 @@ public class AuthController {
             cookieUtil.setAccessToken(response, accessToken);
             cookieUtil.setRefreshToken(response, refreshToken);
 
+
             return ResponseEntity.ok(Map.of(
-                    "message", "Login success",
-                    "username", user.getEmail()  // Changed from user.getUsername()
+                    "id", user.getId(),
+                    "name", user.getFullName(),
+                    "email", user.getEmail(),
+                    "role", user.getRole().name(),
+                    "username", user.getUsername()
             ));
         } catch (Exception e) {
             log.error("Login error: ", e);

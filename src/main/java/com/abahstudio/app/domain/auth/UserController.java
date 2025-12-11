@@ -66,9 +66,26 @@ public class UserController {
 
     @GetMapping("/me")
     public ResponseEntity<User> getCurrentUser(Authentication authentication) {
-        if (authentication != null && authentication.getPrincipal() instanceof User currentUser) {
-            return ResponseEntity.ok(currentUser);
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        Object principal = authentication.getPrincipal();
+
+        String username = null;
+        if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
+            username = ud.getUsername();
+        } else if (principal instanceof String s) {
+            username = s;
+        }
+
+        if (username == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return userService.getUserByUsername(username)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
+
 }

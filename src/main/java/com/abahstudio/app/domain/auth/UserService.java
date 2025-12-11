@@ -1,9 +1,6 @@
 package com.abahstudio.app.domain.auth;
 
-import com.abahstudio.app.core.exception.ApiException;
-import com.abahstudio.app.core.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -58,14 +55,4 @@ public class UserService {
         return userRepository.existsByUsernameOrEmail(usernameOrEmail, usernameOrEmail);
     }
 
-    public UserDetails loadUserByUserName (String usernameOrEmail) {
-        User user = userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
-                .orElseThrow(() -> new ApiException(ErrorCode.USER_NOT_FOUND));
-
-        return org.springframework.security.core.userdetails.User
-                .withUsername(user.getEmail())
-                .password(user.getPassword())
-                .authorities("USER")
-                .build();
-    }
 }

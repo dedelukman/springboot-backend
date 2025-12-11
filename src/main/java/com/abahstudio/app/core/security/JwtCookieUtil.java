@@ -30,11 +30,6 @@ public class JwtCookieUtil {
     @Value("${jwt.refresh.expiration}")
     private long refreshExpMs;
 
-    @Value("${jwt.access.expiration}")
-    private int accessExp;
-
-    @Value("${jwt.refresh.expiration}")
-    private int refreshExp;
 
     // ==========================
     //   CREATE COOKIE
