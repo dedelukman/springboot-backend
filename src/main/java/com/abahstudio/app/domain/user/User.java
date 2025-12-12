@@ -1,6 +1,6 @@
 package com.abahstudio.app.domain.user;
 
-import com.abahstudio.app.domain.BaseEntity;
+import com.abahstudio.app.core.base.CompanyScopedEntity;
 import com.abahstudio.app.domain.auth.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,7 +13,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @ToString
-public class User extends BaseEntity {
+public class User extends CompanyScopedEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
