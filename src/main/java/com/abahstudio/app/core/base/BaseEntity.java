@@ -1,4 +1,4 @@
-package com.abahstudio.app.domain;
+package com.abahstudio.app.core.base;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
