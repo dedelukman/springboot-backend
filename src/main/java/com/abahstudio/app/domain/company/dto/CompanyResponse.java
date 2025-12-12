@@ -1,4 +1,4 @@
-package com.abahstudio.app.domain.company;
+package com.abahstudio.app.domain.company.dto;
 
 import lombok.Getter;
 import lombok.Setter;

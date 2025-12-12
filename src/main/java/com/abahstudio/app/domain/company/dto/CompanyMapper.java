@@ -1,5 +1,6 @@
-package com.abahstudio.app.domain.company;
+package com.abahstudio.app.domain.company.dto;
 
+import com.abahstudio.app.domain.company.Company;
 import org.springframework.stereotype.Component;
 
 @Component

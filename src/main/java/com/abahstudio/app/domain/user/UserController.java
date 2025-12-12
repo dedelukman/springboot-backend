@@ -1,9 +1,14 @@
 package com.abahstudio.app.domain.user;
 
 import com.abahstudio.app.core.exception.ApiException;
+import com.abahstudio.app.domain.user.dto.UserMapper;
+import com.abahstudio.app.domain.user.dto.UserRequest;
+import com.abahstudio.app.domain.user.dto.UserResponse;
 import jakarta.servlet.http.HttpServletResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -11,6 +16,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -19,80 +26,95 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper mapper;
 
+    // GET ALL USERS
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<User>> getAllUsers() {
-        List<User> users = userService.getAllUsers();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        List<UserResponse> responses = userService.getAllUsers()
+                .stream()
+                .map(mapper::toResponse)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responses);
     }
 
+    // GET USER BY ID
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable("id") Long userId) {
-        return userService.getUserById(userId)
-                .map(user -> new ResponseEntity<>(user, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
+        return userService.getUserById(id)
+                .map(mapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
+    // REGISTER USER
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody User user) {
-        if (userService.existsByUsername(user.getEmail())) {
-            return new ResponseEntity<>("Email is already taken", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> registerUser(@RequestBody UserRequest request) {
+
+        if (userService.existsByUsername(request.getEmail())) {
+            return ResponseEntity.badRequest().body("Email is already taken");
         }
 
-        User savedUser = userService.createUser(user);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+        User entity = mapper.toEntity(request);
+        User saved = userService.createUser(entity);
+
+        return new ResponseEntity<>(mapper.toResponse(saved), HttpStatus.CREATED);
     }
 
+    // UPDATE USER
     @PutMapping("/{id}")
     public ResponseEntity<?> updateUser(
-            @PathVariable("id") Long userId,
-            @RequestBody User userDetails, HttpServletResponse response) {
+            @PathVariable UUID id,
+            @RequestBody UserRequest request,
+            HttpServletResponse response) {
+
         try {
-            User updatedUser = userService.updateUser(userId, userDetails, response);
-            return new ResponseEntity<>(updatedUser, HttpStatus.OK);
-        } catch (ApiException e){
+            User existing = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+
+            // apply DTO → entity updates
+            mapper.updateEntity(request, existing);
+
+            // let service handle password encode + re-auth
+            User updated = userService.updateUser(id, existing, response);
+
+            return ResponseEntity.ok(mapper.toResponse(updated));
+
+        } catch (ApiException e) {
             return new ResponseEntity<>(e.getErrorCode().getCode(), e.getErrorCode().getStatus());
-        }
-        catch (RuntimeException e) {
-            log.info(e.getMessage());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (RuntimeException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.notFound().build();
         }
     }
 
+    // DELETE USER
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         try {
-            userService.deleteUser(userId);
-            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            userService.deleteUser(id);
+            return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.notFound().build();
         }
     }
 
+    // CURRENT LOGGED USER
     @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser(Authentication authentication) {
-        if (authentication == null) {
+    public ResponseEntity<UserResponse> getCurrentUser(Authentication auth) {
+
+        if (auth == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        Object principal = authentication.getPrincipal();
-
-        String username = null;
-        if (principal instanceof org.springframework.security.core.userdetails.UserDetails ud) {
-            username = ud.getUsername();
-        } else if (principal instanceof String s) {
-            username = s;
-        }
-
-        if (username == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+        String username = auth.getName();
 
         return userService.getUserByUsername(username)
+                .map(mapper::toResponse)
                 .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
-
 }

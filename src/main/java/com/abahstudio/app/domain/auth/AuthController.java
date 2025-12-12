@@ -2,6 +2,8 @@ package com.abahstudio.app.domain.auth;
 
 import com.abahstudio.app.core.security.JwtCookieUtil;
 import com.abahstudio.app.core.security.JwtUtil;
+import com.abahstudio.app.domain.company.Company;
+import com.abahstudio.app.domain.company.CompanyService;
 import com.abahstudio.app.domain.user.User;
 import com.abahstudio.app.domain.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,6 +32,7 @@ public class AuthController {
     private final UserService userService;
     private final JwtUtil jwtUtil;
     private final JwtCookieUtil cookieUtil;
+    private final CompanyService companyService;
 
     // =================================
     //              LOGIN
@@ -110,12 +113,16 @@ public class AuthController {
         if (userService.existsByUsername(request.getEmail())) {
             return ResponseEntity.badRequest().body("Email is already taken");
         }
+        Company entity = new Company();
+        Company company = companyService.create(entity);
 
         // Buat user baru
         User user = new User();
         user.setFullName(request.getName());
         user.setEmail(request.getEmail());
         user.setPassword(request.getPassword()); // service harus encode!
+        user.setCompany(company);
+        user.setCompanyCode(company.getCode());
         user.setRole(Role.USER);
 
         // Simpan user
