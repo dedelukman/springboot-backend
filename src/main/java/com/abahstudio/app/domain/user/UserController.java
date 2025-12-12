@@ -1,4 +1,4 @@
-package com.abahstudio.app.domain.auth;
+package com.abahstudio.app.domain.user;
 
 import com.abahstudio.app.core.exception.ApiException;
 import jakarta.servlet.http.HttpServletResponse;

@@ -1,6 +1,7 @@
-package com.abahstudio.app.domain.auth;
+package com.abahstudio.app.domain.user;
 
 import com.abahstudio.app.domain.BaseEntity;
+import com.abahstudio.app.domain.auth.Role;
 import jakarta.persistence.*;
 import lombok.*;
 

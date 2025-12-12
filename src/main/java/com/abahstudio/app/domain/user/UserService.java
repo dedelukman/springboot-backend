@@ -1,7 +1,8 @@
-package com.abahstudio.app.domain.auth;
+package com.abahstudio.app.domain.user;
 
 import com.abahstudio.app.core.exception.ApiException;
 import com.abahstudio.app.core.exception.ErrorCode;
+import com.abahstudio.app.domain.auth.AuthService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

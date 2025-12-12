@@ -2,6 +2,8 @@ package com.abahstudio.app.domain.auth;
 
 import com.abahstudio.app.core.security.JwtCookieUtil;
 import com.abahstudio.app.core.security.JwtUtil;
+import com.abahstudio.app.domain.user.User;
+import com.abahstudio.app.domain.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
