@@ -56,7 +56,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNotFound(NoResourceFoundException ex,
                                                         HttpServletRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
-        return buildErrorResponse(ErrorCode.USER_NOT_FOUND, "Resource not found", request);
+        return buildErrorResponse(ErrorCode.PAGE_NOT_FOUND, "Resource not found", request);
     }
 
     // ----------- Database / Concurrency Exceptions -----------

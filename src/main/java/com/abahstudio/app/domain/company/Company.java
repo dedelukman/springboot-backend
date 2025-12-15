@@ -1,6 +1,6 @@
 package com.abahstudio.app.domain.company;
 
-import com.abahstudio.app.core.base.BaseEntity;
+import com.abahstudio.app.core.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

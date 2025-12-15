@@ -1,4 +1,4 @@
-package com.abahstudio.app.core.base;
+package com.abahstudio.app.core.entity;
 
 import com.abahstudio.app.domain.company.Company;
 import jakarta.persistence.*;
