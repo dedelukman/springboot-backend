@@ -20,7 +20,7 @@ public class AuthService {
 
     public void reAuthenticate(User user, HttpServletResponse response) {
         // Reload UserDetails terbaru
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
 
         // Set authentication baru
         UsernamePasswordAuthenticationToken newAuth =

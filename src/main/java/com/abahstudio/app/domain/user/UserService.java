@@ -1,5 +1,6 @@
 package com.abahstudio.app.domain.user;
 
+import com.abahstudio.app.domain.user.dto.UserRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public interface UserService {
 
     User createUser(User user);
 
-    User updateUser(UUID id, User userDetails, HttpServletResponse response);
+    User updateUser(UUID id, UserRequest request, HttpServletResponse response);
 
     void deleteUser(UUID id);
 

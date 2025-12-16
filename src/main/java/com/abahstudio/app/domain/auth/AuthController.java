@@ -49,7 +49,7 @@ public class AuthController {
 
             // Then authenticate
             Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), request.getPassword())
             );
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -129,8 +129,8 @@ public class AuthController {
         User savedUser = userService.createUser(user);
 
         // Generate JWT berdasarkan savedUser
-        String accessToken = jwtUtil.generateAccessToken(savedUser.getEmail());
-        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getEmail());
+        String accessToken = jwtUtil.generateAccessToken(savedUser.getUsername());
+        String refreshToken = jwtUtil.generateRefreshToken(savedUser.getUsername());
 
         // Set cookie
         cookieUtil.setAccessToken(response, accessToken);

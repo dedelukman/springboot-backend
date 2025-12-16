@@ -1,14 +1,11 @@
 package com.abahstudio.app.domain.user;
 
-import com.abahstudio.app.core.exception.ApiException;
 import com.abahstudio.app.domain.user.dto.UserMapper;
 import com.abahstudio.app.domain.user.dto.UserRequest;
 import com.abahstudio.app.domain.user.dto.UserResponse;
 import jakarta.servlet.http.HttpServletResponse;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -70,24 +67,8 @@ public class UserController {
             @RequestBody UserRequest request,
             HttpServletResponse response) {
 
-        try {
-            User existing = userService.getUserById(id)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
-
-            // apply DTO → entity updates
-            mapper.updateEntity(request, existing);
-
-            // let service handle password encode + re-auth
-            User updated = userService.updateUser(id, existing, response);
-
-            return ResponseEntity.ok(mapper.toResponse(updated));
-
-        } catch (ApiException e) {
-            return new ResponseEntity<>(e.getErrorCode().getCode(), e.getErrorCode().getStatus());
-        } catch (RuntimeException e) {
-            log.error(e.getMessage());
-            return ResponseEntity.notFound().build();
-        }
+        User updated = userService.updateUser(id, request, response);
+        return ResponseEntity.ok(mapper.toResponse(updated));
     }
 
     // DELETE USER

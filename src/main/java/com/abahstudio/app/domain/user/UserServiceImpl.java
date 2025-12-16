@@ -4,6 +4,7 @@ import com.abahstudio.app.core.exception.ApiException;
 import com.abahstudio.app.core.exception.ErrorCode;
 import com.abahstudio.app.domain.auth.AuthService;
 
+import com.abahstudio.app.domain.user.dto.UserRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,31 +47,31 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(UUID id, User userDetails, HttpServletResponse response) {
+    public User updateUser(UUID id, UserRequest request, HttpServletResponse response) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        boolean usernameChanged = !user.getUsername().equals(userDetails.getUsername());
-        boolean emailChanged = !user.getEmail().equals(userDetails.getEmail());
+        boolean usernameChanged = !user.getUsername().equals(request.getUsername());
+        boolean emailChanged = !user.getEmail().equals(request.getEmail());
 
-        if (usernameChanged && existsByUsername(userDetails.getUsername())) {
+        if (usernameChanged && existsByUsername(request.getUsername())) {
             throw new ApiException(ErrorCode.USERNAME_ALREADY_TAKEN);
         }
-        if (emailChanged && existsByUsername(userDetails.getEmail())) {
+        if (emailChanged && existsByUsername(request.getEmail())) {
             throw new ApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        user.setUsername(userDetails.getUsername());
-        user.setFullName(userDetails.getFullName());
-        user.setEmail(userDetails.getEmail());
+        user.setUsername(request.getUsername());
+        user.setFullName(request.getFullName());
+        user.setEmail(request.getEmail());
 
-        if (userDetails.getPassword() != null && !userDetails.getPassword().isBlank()) {
-            user.setPassword(passwordEncoder.encode(userDetails.getPassword()));
+        if (request.getPassword() != null && !request.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-        if (usernameChanged) {
-            authService.reAuthenticate(user, response);
-        }
+//        if (usernameChanged) {
+//            authService.reAuthenticate(user, response);
+//        }
 
         return userRepository.save(user);
     }
