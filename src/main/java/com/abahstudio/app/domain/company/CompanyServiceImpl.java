@@ -46,7 +46,6 @@ public class CompanyServiceImpl implements CompanyService {
             throw new RuntimeException("Company code already exists: " + companyDetails.getCode());
         }
 
-        company.setCode(companyDetails.getCode());
         company.setName(companyDetails.getName());
         company.setAddress(companyDetails.getAddress());
         company.setCity(companyDetails.getCity());

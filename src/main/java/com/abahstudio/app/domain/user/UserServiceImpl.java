@@ -51,17 +51,12 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
 
-        boolean usernameChanged = !user.getUsername().equals(request.getUsername());
         boolean emailChanged = !user.getEmail().equals(request.getEmail());
 
-        if (usernameChanged && existsByUsername(request.getUsername())) {
-            throw new ApiException(ErrorCode.USERNAME_ALREADY_TAKEN);
-        }
         if (emailChanged && existsByUsername(request.getEmail())) {
             throw new ApiException(ErrorCode.EMAIL_ALREADY_EXISTS);
         }
 
-        user.setUsername(request.getUsername());
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
 
@@ -69,9 +64,6 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
 
-//        if (usernameChanged) {
-//            authService.reAuthenticate(user, response);
-//        }
 
         return userRepository.save(user);
     }

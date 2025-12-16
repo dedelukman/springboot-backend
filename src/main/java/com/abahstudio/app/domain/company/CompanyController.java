@@ -4,14 +4,18 @@ package com.abahstudio.app.domain.company;
 import com.abahstudio.app.domain.company.dto.CompanyMapper;
 import com.abahstudio.app.domain.company.dto.CompanyRequest;
 import com.abahstudio.app.domain.company.dto.CompanyResponse;
+import com.abahstudio.app.domain.user.User;
+import com.abahstudio.app.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -20,6 +24,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CompanyController {
 
+    private final UserService userService;
     private final CompanyService companyService;
     private final CompanyMapper mapper;
 
@@ -72,5 +77,22 @@ public class CompanyController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         companyService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<CompanyResponse> getCurrentCompany(Authentication auth) {
+
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        String username = auth.getName();
+        log.info(username);
+        Optional<User> userOptional = userService.getUserByUsername(username);
+       String code = userOptional.get().getCompanyCode();
+        return companyService.findByCode(code)
+                .map(mapper::toResponse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
 }
