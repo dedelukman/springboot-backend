@@ -85,9 +85,7 @@ public class CompanyController {
         if (auth == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-
         String username = auth.getName();
-        log.info(username);
         Optional<User> userOptional = userService.getUserByUsername(username);
        String code = userOptional.get().getCompanyCode();
         return companyService.findByCode(code)
