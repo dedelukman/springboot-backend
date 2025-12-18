@@ -1,7 +1,5 @@
 package com.abahstudio.app.domain.ticket;
 
-import com.abahstudio.app.domain.company.Company;
-import com.abahstudio.app.domain.company.CompanyRepository;
 import com.abahstudio.app.domain.user.User;
 import com.abahstudio.app.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -59,7 +57,6 @@ public class TicketServiceImpl implements TicketService {
             throw new IllegalStateException("Company code is required for user: " + username);
         }
 
-        ticket.setCompany(user.getCompany());
         ticket.setCompanyCode(user.getCompanyCode());
 
         return ticketRepository.save(ticket);

@@ -3,6 +3,7 @@ package com.abahstudio.app.domain.user;
 
 import com.abahstudio.app.core.entity.CompanyScopedEntity;
 import com.abahstudio.app.domain.auth.Role;
+import com.abahstudio.app.domain.company.Company;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -40,6 +41,10 @@ public class User extends CompanyScopedEntity {
 
     private boolean enabled = true;
     private boolean locked = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @PrePersist
     public void prePersist() {

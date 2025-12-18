@@ -1,7 +1,7 @@
 package com.abahstudio.app.core.entity;
 
-import com.abahstudio.app.domain.company.Company;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,9 +9,6 @@ import lombok.Setter;
 @Setter
 @MappedSuperclass
 public abstract class CompanyScopedEntity extends BaseEntity {
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "company_id")
-    private Company company;
 
     @Column(nullable = false)
     private String companyCode;
