@@ -87,7 +87,7 @@ public class CompanyController {
         }
         String username = auth.getName();
         Optional<User> userOptional = userService.getUserByUsername(username);
-       String code = userOptional.get().getCompanyCode();
+        String code = userOptional.get().getCompanyCode();
         return companyService.findByCode(code)
                 .map(mapper::toResponse)
                 .map(ResponseEntity::ok)

@@ -2,7 +2,13 @@ package com.abahstudio.app.domain.ticket;
 
 import com.abahstudio.app.domain.company.Company;
 import com.abahstudio.app.domain.company.CompanyRepository;
+import com.abahstudio.app.domain.user.User;
+import com.abahstudio.app.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +23,7 @@ import java.util.Optional;
 public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
-    private final CompanyRepository companyRepository; // sementara
+    private final UserService userService; // sementara
 
     @Override
     public Ticket create(Ticket ticket) {
@@ -27,15 +33,35 @@ public class TicketServiceImpl implements TicketService {
         while (ticketRepository.existsByCode(code)) {
             code = generateTicketCode();
         }
-
-        //sementara
-        Optional<Company> company = companyRepository.findByCode("AGENT0001");
-        ticket.setCompany(company.get());
-        ticket.setCompanyCode(company.get().getCode());
         ticket.setCode(code);
-        //sementara
-
         ticket.setStatus(TicketStatus.OPEN);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new AuthenticationCredentialsNotFoundException("No authenticated user found");
+        }
+
+        String username = authentication.getName();
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Invalid username in authentication");
+        }
+
+        Optional<User> userOptional = userService.getUserByUsername(username);
+        User user = userOptional.orElseThrow(() ->
+                new UsernameNotFoundException("User not found with username: " + username)
+        );
+
+        if (user.getCompany() == null) {
+            throw new IllegalStateException("User must be associated with a company");
+        }
+
+        if (user.getCompanyCode() == null || user.getCompanyCode().trim().isEmpty()) {
+            throw new IllegalStateException("Company code is required for user: " + username);
+        }
+
+        ticket.setCompany(user.getCompany());
+        ticket.setCompanyCode(user.getCompanyCode());
+
         return ticketRepository.save(ticket);
     }
 
