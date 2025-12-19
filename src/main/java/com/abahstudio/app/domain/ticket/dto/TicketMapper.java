@@ -25,6 +25,9 @@ public class TicketMapper {
                 .description(ticket.getDescription())
                 .status(ticket.getStatus())
                 .companyCode(ticket.getCompanyCode())
+                .createdAt(ticket.getCreatedAt())
+                .updatedAt(ticket.getUpdatedAt())
+                .updatedBy(ticket.getUpdatedBy())
                 .build();
     }
 }
