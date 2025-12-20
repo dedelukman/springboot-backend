@@ -25,7 +25,7 @@ public class Notification extends CompanyScopedEntity {
     @Enumerated(EnumType.STRING)
     private NotificationType type;
 
-    private Long referenceId;
+    private String referenceId;
 
     private Boolean read;
     private Boolean favorite;
