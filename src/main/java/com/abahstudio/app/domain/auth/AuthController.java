@@ -4,6 +4,7 @@ import com.abahstudio.app.core.security.JwtCookieUtil;
 import com.abahstudio.app.core.security.JwtUtil;
 import com.abahstudio.app.domain.company.Company;
 import com.abahstudio.app.domain.company.CompanyService;
+import com.abahstudio.app.domain.subscription.service.SubscriptionService;
 import com.abahstudio.app.domain.user.User;
 import com.abahstudio.app.domain.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +34,7 @@ public class AuthController {
     private final JwtUtil jwtUtil;
     private final JwtCookieUtil cookieUtil;
     private final CompanyService companyService;
+    private final SubscriptionService subscriptionService;
 
     // =================================
     //              LOGIN
@@ -115,6 +117,8 @@ public class AuthController {
         }
         Company entity = new Company();
         Company company = companyService.create(entity);
+
+        subscriptionService.subscribe(company.getCode());
 
         // Buat user baru
         User user = new User();

@@ -12,7 +12,7 @@ public class NotificationResponse {
     private String title;
     private String body;
     private String type;
-    private Long referenceId;
+    private String referenceId;
     private Boolean read;
     private Boolean favorite;
     private Boolean archived;
