@@ -1,5 +1,6 @@
 package com.abahstudio.app.domain.subscription.service;
 
+import com.abahstudio.app.core.numbering.NumberingService;
 import com.abahstudio.app.core.security.SecurityUtil;
 import com.abahstudio.app.domain.subscription.InvoiceStatus;
 import com.abahstudio.app.domain.subscription.SubscriptionStatus;
@@ -16,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -29,6 +28,7 @@ public class BillingServiceImpl implements BillingService {
     private final BillingInvoiceRepository invoiceRepository;
     private final SecurityUtil securityUtil;
     private final SubscriptionRepository subscriptionRepository;
+    private final NumberingService numberingService;
 
     @Override
     public List<BillingPlanResponse> getPlans() {
@@ -114,7 +114,7 @@ public class BillingServiceImpl implements BillingService {
         }
 
         if (invoice.getInvoiceNumber() == null) {
-            invoice.setInvoiceNumber(generateInvoiceNumber());
+            invoice.setInvoiceNumber(numberingService.generateNumber("INVOICE_BY_SYSTEM"));
             invoice.setInvoiceDate(LocalDate.now());
         }
         invoice.setCompanyCode(companyCode);
@@ -143,7 +143,7 @@ public class BillingServiceImpl implements BillingService {
                 .orElseThrow(() -> new RuntimeException("Plan not found"));
 
         BillingInvoice invoice = new BillingInvoice();
-        invoice.setInvoiceNumber(generateInvoiceNumber());
+        invoice.setInvoiceNumber(numberingService.generateNumber("INVOICE_BY_SYSTEM"));
         invoice.setCompanyCode(companyCode);
         invoice.setPlanCode(plan.getCode());
         invoice.setAmount(plan.getPrice());
@@ -156,11 +156,6 @@ public class BillingServiceImpl implements BillingService {
         return invoiceRepository.save(invoice);
     }
 
-    private String generateInvoiceNumber() {
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        return "INV-" + LocalDateTime.now().format(formatter);
-    }
 
     private BillingInvoiceResponse toResponse(BillingInvoice i) {
         BillingInvoiceResponse r = new BillingInvoiceResponse();

@@ -1,12 +1,11 @@
 package com.abahstudio.app.domain.ticket;
 
+import com.abahstudio.app.core.numbering.NumberingService;
 import com.abahstudio.app.core.security.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,15 +16,12 @@ public class TicketServiceImpl implements TicketService {
 
     private final TicketRepository ticketRepository;
     private final SecurityUtil securityUtil;
+    private final NumberingService numberingService;
 
     @Override
     public Ticket create(Ticket ticket) {
-        String code = generateTicketCode();
+        String code = numberingService.generateNumber("TICKET_BY_SYSTEM");
 
-        // safety check (jarang bentrok, tapi best practice)
-        while (ticketRepository.existsByCode(code)) {
-            code = generateTicketCode();
-        }
         ticket.setCode(code);
         ticket.setStatus(TicketStatus.OPEN);
 
@@ -81,9 +77,4 @@ public class TicketServiceImpl implements TicketService {
         return ticketRepository.findByCreatedBy(username);
     }
 
-    private String generateTicketCode() {
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-        return "T-" + LocalDateTime.now().format(formatter);
-    }
 }
