@@ -1,5 +1,9 @@
 package com.abahstudio.app.domain.company;
 
+import com.abahstudio.app.domain.company.dto.CompanyResponse;
+import com.abahstudio.app.domain.file.FileEntity;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -17,4 +21,8 @@ public interface CompanyService {
     List<Company> findAll();
 
     void delete(UUID id);
+
+    FileEntity upload(MultipartFile file, String ownerType, String ownerId);
+
+    Optional<CompanyResponse>  findByCodeWithLogo(String code);
 }

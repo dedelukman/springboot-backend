@@ -4,6 +4,7 @@ package com.abahstudio.app.domain.company;
 import com.abahstudio.app.domain.company.dto.CompanyMapper;
 import com.abahstudio.app.domain.company.dto.CompanyRequest;
 import com.abahstudio.app.domain.company.dto.CompanyResponse;
+import com.abahstudio.app.domain.file.FileEntity;
 import com.abahstudio.app.domain.user.User;
 import com.abahstudio.app.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Optional;
@@ -88,9 +91,27 @@ public class CompanyController {
         String username = auth.getName();
         Optional<User> userOptional = userService.getUserByUsername(username);
         String code = userOptional.get().getCompanyCode();
-        return companyService.findByCode(code)
-                .map(mapper::toResponse)
+        return companyService.findByCodeWithLogo(code)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    @PostMapping("/logo")
+    public FileEntity upload(
+            @RequestParam MultipartFile file,
+            Authentication auth
+    ) {
+
+        if (auth == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        String ownerType = "COMPANY";
+        String ownerId = user.getCompanyCode();
+
+        return companyService.upload(file, ownerType, ownerId);
     }
 }

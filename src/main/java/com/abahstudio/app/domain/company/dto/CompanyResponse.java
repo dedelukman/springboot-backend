@@ -24,4 +24,6 @@ public class CompanyResponse {
 
     private String createdAt;
     private String updatedAt;
+
+    private String logo;
 }

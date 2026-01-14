@@ -1,9 +1,14 @@
 package com.abahstudio.app.domain.company;
 
 import com.abahstudio.app.core.numbering.NumberingService;
+import com.abahstudio.app.domain.company.dto.CompanyMapper;
+import com.abahstudio.app.domain.company.dto.CompanyResponse;
+import com.abahstudio.app.domain.file.FileEntity;
+import com.abahstudio.app.domain.file.FileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +21,8 @@ public class CompanyServiceImpl implements CompanyService {
 
     private final CompanyRepository companyRepository;
     private final NumberingService numberingService;
+    private final FileService fileService;
+    private final CompanyMapper mapper;
 
 
     @Override
@@ -76,6 +83,40 @@ public class CompanyServiceImpl implements CompanyService {
     @Override
     public void delete(UUID id) {
         companyRepository.deleteById(id);
+    }
+
+    @Override
+    public FileEntity upload(MultipartFile file, String ownerType, String ownerId) {
+        Optional<FileEntity> oldLogo =
+                fileService.findPrimaryByOwner(ownerType, ownerId);
+
+        FileEntity newLogo = fileService.upload(file, ownerType, ownerId);
+
+        newLogo.setIsPrimary(true);
+        FileEntity savedLogo = fileService.save(newLogo);
+
+        oldLogo.ifPresent(fileService::delete);
+
+        return savedLogo;
+    }
+
+    @Override
+    public Optional<CompanyResponse> findByCodeWithLogo(String code) {
+        return companyRepository.findByCode(code)
+                .map(company -> {
+                    CompanyResponse res = mapper.toResponse(company);
+
+                    fileService.findByOwner("COMPANY", code)
+                            .stream()
+                            .findFirst()
+                            .ifPresent(file -> {
+                                res.setLogo(
+                                        "files/view/" + file.getStorageKey()
+                                );
+                            });
+
+                    return res;
+                });
     }
 
 }
