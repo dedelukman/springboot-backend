@@ -46,4 +46,6 @@ public class FileEntity extends CompanyScopedEntity {
 
     @Column(nullable = false)
     private String storageProvider; // LOCAL | S3
+
+    private Boolean isPrimary;
 }

@@ -1,11 +1,13 @@
 package com.abahstudio.app.domain.file;
 
 import com.abahstudio.app.core.security.SecurityUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -44,11 +46,27 @@ public class FileService {
         return repository.findByOwnerTypeAndOwnerId(ownerType, ownerId);
     }
 
-    public FileEntity findByStorageKey(String storageKey) {
+    public Optional<FileEntity> findPrimaryByOwner(String ownerType, String ownerId) {
+        return repository
+                .findFirstByOwnerTypeAndOwnerIdAndIsPrimaryTrue(ownerType, ownerId);
+    }
 
+
+    public FileEntity findByStorageKey(String storageKey) {
         return repository
                 .findByStorageKey(storageKey)
                 .orElseThrow(() -> new RuntimeException("File not found"));
     }
+
+    @Transactional
+    public void delete(FileEntity file) {
+        repository.delete(file);
+        storageService.delete(file.getStorageKey());
+    }
+
+    public FileEntity save(FileEntity entity) {
+        return repository.save(entity);
+    }
+
 
 }

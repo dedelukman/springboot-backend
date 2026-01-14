@@ -9,4 +9,6 @@ public interface FileRepository extends JpaRepository<FileEntity, Long> {
 
     Optional<FileEntity> findByStorageKey(String storageKey);
     List<FileEntity> findByOwnerTypeAndOwnerId(String ownerType, String ownerId);
+
+    Optional<FileEntity> findFirstByOwnerTypeAndOwnerIdAndIsPrimaryTrue(String ownerType, String ownerId);
 }

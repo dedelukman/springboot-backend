@@ -16,4 +16,5 @@ public class UserResponse {
     private boolean locked;
 
     private String companyCode;
+    private String avatarUrl;
 }

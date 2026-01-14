@@ -1,5 +1,6 @@
 package com.abahstudio.app.domain.user;
 
+import com.abahstudio.app.domain.file.FileEntity;
 import com.abahstudio.app.domain.user.dto.UserMapper;
 import com.abahstudio.app.domain.user.dto.UserRequest;
 import com.abahstudio.app.domain.user.dto.UserResponse;
@@ -11,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.UUID;
@@ -91,11 +94,48 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        String username = auth.getName();
-
-        return userService.getUserByUsername(username)
-                .map(mapper::toResponse)
+        return userService.getUserWithAvatar(auth.getName())
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
     }
+
+    @PostMapping("/avatar")
+    public FileEntity upload(
+            @RequestParam MultipartFile file,
+            Authentication auth
+    ) {
+
+        if (auth == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+
+        User user = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        String ownerType = "USER";
+        String ownerId = user.getId().toString();
+
+        return userService.upload(file, ownerType, ownerId);
+    }
+
+    @DeleteMapping("/avatar")
+    public ResponseEntity<Void> deleteAvatar(Authentication auth) {
+
+        if (auth == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        User user = userService.getUserByUsername(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+
+        String ownerType = "USER";
+        String ownerId = user.getId().toString();
+
+        userService.deleteAvatar(ownerType, ownerId);
+
+        return ResponseEntity.noContent().build();
+    }
+
+
+
 }
