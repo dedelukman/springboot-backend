@@ -1,8 +1,11 @@
 package com.abahstudio.app.domain.user.dto;
 
-import com.abahstudio.app.domain.auth.Role;
+import com.abahstudio.app.domain.role.entity.Role;
 import com.abahstudio.app.domain.user.User;
 import org.springframework.stereotype.Component;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Component
 public class UserMapper {
@@ -17,10 +20,6 @@ public class UserMapper {
         user.setPassword(request.getPassword());
         user.setFullName(request.getFullName());
         user.setPhone(request.getPhone());
-
-        if (request.getRole() != null) {
-            user.setRole(Role.valueOf(request.getRole()));
-        }
 
         if (request.getEnabled() != null) {
             user.setEnabled(request.getEnabled());
@@ -43,9 +42,6 @@ public class UserMapper {
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getPhone() != null) user.setPhone(request.getPhone());
 
-        if (request.getRole() != null) {
-            user.setRole(Role.valueOf(request.getRole()));
-        }
         if (request.getEnabled() != null) {
             user.setEnabled(request.getEnabled());
         }
@@ -64,12 +60,26 @@ public class UserMapper {
         response.setEmail(user.getEmail());
         response.setFullName(user.getFullName());
         response.setPhone(user.getPhone());
-        response.setRole(user.getRole() != null ? user.getRole().name() : null);
         response.setEnabled(user.isEnabled());
         response.setLocked(user.isLocked());
 
         // Dari CompanyScopedEntity
-//        response.setCompanyCode(user.getCompanyCode());
+        response.setCompanyCode(user.getCompanyCode());
+
+        Set<String> roles = new HashSet<>();
+        Set<String> permissions = new HashSet<>();
+
+        user.getUserRoles().forEach(ur -> {
+            Role role = ur.getRole();
+            roles.add(role.getCode());
+
+            role.getRolePermissions().forEach(rp -> {
+                permissions.add(rp.getPermission().getCode());
+            });
+        });
+
+        response.setRoles(roles);
+        response.setPermissions(permissions);
 
         return response;
     }

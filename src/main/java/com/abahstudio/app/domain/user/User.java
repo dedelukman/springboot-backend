@@ -2,11 +2,13 @@ package com.abahstudio.app.domain.user;
 
 
 import com.abahstudio.app.core.entity.CompanyScopedEntity;
-import com.abahstudio.app.domain.auth.Role;
+import com.abahstudio.app.domain.role.entity.UserRole;
 import com.abahstudio.app.domain.company.Company;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -36,8 +38,8 @@ public class User extends CompanyScopedEntity {
 
     private String phone;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    @OneToMany(mappedBy = "user")
+    private Set<UserRole> userRoles = new HashSet<>();
 
     private boolean enabled = true;
     private boolean locked = false;

@@ -65,6 +65,7 @@ public class UserController {
 
     // UPDATE USER
     @PutMapping("/{id}")
+    @PreAuthorize("@userPolicy.canEditUser(#id)")
     public ResponseEntity<?> updateUser(
             @PathVariable UUID id,
             @RequestBody UserRequest request,

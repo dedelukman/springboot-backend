@@ -4,6 +4,10 @@ import com.abahstudio.app.core.security.JwtCookieUtil;
 import com.abahstudio.app.core.security.JwtUtil;
 import com.abahstudio.app.domain.company.Company;
 import com.abahstudio.app.domain.company.CompanyService;
+import com.abahstudio.app.domain.role.dto.CreateRoleRequest;
+import com.abahstudio.app.domain.role.entity.Role;
+import com.abahstudio.app.domain.role.service.RoleService;
+import com.abahstudio.app.domain.role.service.UserRoleService;
 import com.abahstudio.app.domain.subscription.service.SubscriptionService;
 import com.abahstudio.app.domain.user.User;
 import com.abahstudio.app.domain.user.UserService;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
@@ -35,6 +40,8 @@ public class AuthController {
     private final JwtCookieUtil cookieUtil;
     private final CompanyService companyService;
     private final SubscriptionService subscriptionService;
+    private final RoleService roleService;
+    private final UserRoleService userRoleService;
 
     // =================================
     //              LOGIN
@@ -67,7 +74,7 @@ public class AuthController {
                     "id", user.getId(),
                     "name", user.getFullName(),
                     "email", user.getEmail(),
-                    "role", user.getRole().name(),
+//                    "role", user.getRole().name(),
                     "username", user.getUsername()
             ));
         } catch (Exception e) {
@@ -120,6 +127,12 @@ public class AuthController {
 
         subscriptionService.subscribe(company.getCode());
 
+        CreateRoleRequest createRole = new CreateRoleRequest();
+        createRole.setCode("ADMIN" );
+        createRole.setName("Admin " + company.getCode());
+        Role role = roleService.createRole(createRole, company.getCode());
+
+
         // Buat user baru
         User user = new User();
         user.setFullName(request.getName());
@@ -127,10 +140,11 @@ public class AuthController {
         user.setPassword(request.getPassword()); // service harus encode!
         user.setCompany(company);
         user.setCompanyCode(company.getCode());
-        user.setRole(Role.USER);
 
         // Simpan user
         User savedUser = userService.createUser(user);
+
+        userRoleService.assignRole(savedUser.getId(), role.getId(), company.getCode());
 
         // Generate JWT berdasarkan savedUser
         String accessToken = jwtUtil.generateAccessToken(savedUser.getUsername());
@@ -145,7 +159,7 @@ public class AuthController {
                 "id", savedUser.getId(),
                 "name", savedUser.getFullName(),
                 "email", savedUser.getEmail(),
-                "role", savedUser.getRole().name(),
+//                "role", savedUser.getRole().name(),
                 "username", savedUser.getUsername()
         ));
     }

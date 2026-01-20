@@ -2,6 +2,7 @@ package com.abahstudio.app.domain.user.dto;
 
 import lombok.Data;
 
+import java.util.Set;
 import java.util.UUID;
 
 @Data
@@ -11,7 +12,8 @@ public class UserResponse {
     private String email;
     private String fullName;
     private String phone;
-    private String role;
+    private Set<String> roles;        // SUPER_ADMIN, ADMIN
+    private Set<String> permissions;  // USER_CREATE, ...
     private boolean enabled;
     private boolean locked;
 

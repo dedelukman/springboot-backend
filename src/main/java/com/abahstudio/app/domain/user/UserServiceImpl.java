@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -80,15 +81,17 @@ public class UserServiceImpl implements UserService {
         userRepository.delete(user);
     }
 
+
     @Override
     public boolean existsByUsername(String usernameOrEmail) {
         return userRepository.existsByUsernameOrEmail(usernameOrEmail, usernameOrEmail);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<UserResponse> getUserWithAvatar(String usernameOrEmail) {
 
-        return userRepository.findByUsernameOrEmail(usernameOrEmail, usernameOrEmail)
+        return userRepository.findByUsernameOrEmailWithRoles(usernameOrEmail)
                 .map(user -> {
 
                     UserResponse res = mapper.toResponse(user);
