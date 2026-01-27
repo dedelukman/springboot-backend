@@ -22,7 +22,7 @@ public class Role extends CompanyScopedEntity {
     private UUID id;
 
     @Column(nullable = false)
-    private String code; // SUPER_ADMIN, ADMIN, DOCTOR
+    private String code; // SUPER_ADMIN, ADMIN, USER
 
     private String name;
 

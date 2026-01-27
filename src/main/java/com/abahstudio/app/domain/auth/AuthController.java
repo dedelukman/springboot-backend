@@ -4,7 +4,6 @@ import com.abahstudio.app.core.security.JwtCookieUtil;
 import com.abahstudio.app.core.security.JwtUtil;
 import com.abahstudio.app.domain.company.Company;
 import com.abahstudio.app.domain.company.CompanyService;
-import com.abahstudio.app.domain.role.dto.CreateRoleRequest;
 import com.abahstudio.app.domain.role.entity.Role;
 import com.abahstudio.app.domain.role.service.RoleService;
 import com.abahstudio.app.domain.role.service.UserRoleService;
@@ -127,11 +126,6 @@ public class AuthController {
 
         subscriptionService.subscribe(company.getCode());
 
-        CreateRoleRequest createRole = new CreateRoleRequest();
-        createRole.setCode("ADMIN" );
-        createRole.setName("Admin " + company.getCode());
-        Role role = roleService.createRole(createRole, company.getCode());
-
 
         // Buat user baru
         User user = new User();
@@ -143,6 +137,8 @@ public class AuthController {
 
         // Simpan user
         User savedUser = userService.createUser(user);
+
+        Role  role = roleService.findByCodeAndCompanyCode("ADMIN", "SYSTEM");
 
         userRoleService.assignRole(savedUser.getId(), role.getId(), company.getCode());
 

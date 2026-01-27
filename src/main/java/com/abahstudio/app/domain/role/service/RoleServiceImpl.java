@@ -72,5 +72,11 @@ public class RoleServiceImpl implements RoleService {
         return roleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Role not found"));
     }
+
+    @Override
+    public Role findByCodeAndCompanyCode(String code, String companyCode) {
+        return roleRepository.findByCodeAndCompanyCode(code, companyCode)
+                .orElseThrow(() -> new RuntimeException("Role not found"));
+    }
 }
 

@@ -15,5 +15,7 @@ public interface RoleService {
     List<Role> findAllByCompany();
 
     Role findById(UUID id);
+
+    Role findByCodeAndCompanyCode(String code, String companyCode);
 }
 
